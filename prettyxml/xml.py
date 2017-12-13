@@ -10,20 +10,17 @@ class CharQueue(list):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    def read_char(self):
+    def pop_char(self):
         return self.pop(0)
 
-    def view_char(self) -> str:
+    def peek_char(self) -> str:
         return self[0] if self else None
 
-    def read_until(self, ch) -> str:
+    def pop_until(self, chs: str) -> str:
+        ''' pop until next char in `chs`. '''
         val = ''
-        try:
-            while not self.view_char() in ch:
-                val += self.read_char()
-        except BaseException:
-            print(val)
-            raise
+        while not self.peek_char() in chs:
+            val += self.pop_char()
         return val
 
 
@@ -45,11 +42,11 @@ class Attribute:
 
     @classmethod
     def fromstring(cls, content: CharQueue):
-        name = content.read_until('=')
-        assert content.read_char() == '='
-        assert content.read_char() == '"'
-        value = content.read_until('"')
-        assert content.read_char() == '"'
+        name = content.pop_until('=')
+        assert content.pop_char() == '='
+        assert content.pop_char() == '"'
+        value = content.pop_until('"')
+        assert content.pop_char() == '"'
         return cls(name, value)
 
 class TextNode(Node):
@@ -81,42 +78,42 @@ class Element(Node):
 
     @classmethod
     def fromstring(cls, content: CharQueue):
-        name = content.read_until((' ', '>'))
+        name = content.pop_until(' >')
         if name[0] == '?':
             cls = Declaration
             name = name[1:]
         el = cls(name)
 
-        while content.view_char() == ' ':
-            ch = content.read_char()
-            ch = content.view_char()
+        while content.peek_char() == ' ':
+            ch = content.pop_char()
+            ch = content.peek_char()
             if ch == '/':
-                content.read_char()
-                assert content.read_char() == '>'
+                content.pop_char()
+                assert content.pop_char() == '>'
                 return el
             if ch not in ' >':
                 el.attrib.append(Attribute.fromstring(content))
 
         if cls == Declaration:
-            assert content.read_char() == '?'
-        assert content.read_char() == '>'
+            assert content.pop_char() == '?'
+        assert content.pop_char() == '>'
         if cls == Declaration:
             return el
 
         while content:
-            if content.view_char() == '<':
-                content.read_char()
-                if content.view_char() == '/': # end tag
-                    assert content.read_char() == '/'
-                    end = content.read_until('>')
-                    assert content.read_char() == '>'
+            if content.peek_char() == '<':
+                content.pop_char()
+                if content.peek_char() == '/': # end tag
+                    assert content.pop_char() == '/'
+                    end = content.pop_until('>')
+                    assert content.pop_char() == '>'
                     assert end == name
                     break
                 else: # sub
                     sub_el = Element.fromstring(content)
                     el.items.append(sub_el)
             else:
-                text = TextNode(content.read_until('<'))
+                text = TextNode(content.pop_until('<'))
                 el.items.append(text)
 
         return el
@@ -130,7 +127,7 @@ def fromstring(val: str):
     content = CharQueue(val)
     ret = []
     while content:
-        ch = content.read_char()
+        ch = content.pop_char()
         if ch == '<':
             ret.append(Element.fromstring(content))
         elif ch.isspace():

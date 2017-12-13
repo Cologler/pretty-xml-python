@@ -14,6 +14,16 @@ import core
 def print_help():
     print('use pipe to input xml content.')
 
+def trim_header(content):
+    headers = [
+        chr(38168) + chr(56511), # utf8 bom on encoding GBK when using `type` command.
+    ]
+    for header in headers:
+        if content.startswith(header):
+            content = content[len(header):]
+            return content
+    return content
+
 def main(argv=None):
     if argv is None:
         argv = sys.argv
@@ -21,7 +31,8 @@ def main(argv=None):
         if sys.stdin.isatty():
             print_help()
         else:
-            xml_content = sys.stdin.read()
+            xml_content = trim_header(sys.stdin.read())
+            print(xml_content)
             core.XmlPrettifier(xml_content).print()
     except Exception:
         traceback.print_exc()
