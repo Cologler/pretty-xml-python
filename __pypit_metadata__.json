@@ -1,6 +1,6 @@
 {
   "name": "prettyxml",
-  "version": "0.1.0.0",
+  "version": "0.1.0.1",
   "description": "",
   "keywords": [],
   "author": "cologler",
@@ -9,7 +9,11 @@
   "license": "",
   "classifiers": [],
   "scripts": [],
-  "entry_points": {},
+  "entry_points": {
+    "console_scripts": [
+      "prettyxml=prettyxml.main:main"
+    ]
+  },
   "zip_safe": false,
   "include_package_data": true,
   "setup_requires": [],

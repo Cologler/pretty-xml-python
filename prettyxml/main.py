@@ -9,7 +9,7 @@
 import os
 import sys
 import traceback
-import core
+import prettyxml.core as core
 
 def print_help():
     print('use pipe to input xml content.')

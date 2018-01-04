@@ -9,7 +9,7 @@
 import colorama
 from colorama import Fore, Style, Back
 
-import xml
+import prettyxml.xml as xml
 
 colorama.init()
 
