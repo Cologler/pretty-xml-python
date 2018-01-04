@@ -9,9 +9,17 @@
 class CharQueue(list):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self._last = None
+
+    @property
+    def last(self):
+        ''' the lase poped char. '''
+        return self._last
 
     def pop_char(self):
-        return self.pop(0)
+        ''' remove first char from queue, also cache it in `self.last`.'''
+        self._ = self.pop(0)
+        return self._
 
     def peek_char(self) -> str:
         return self[0] if self else None
@@ -96,8 +104,12 @@ class Element(Node):
 
         if cls == Declaration:
             assert content.pop_char() == '?'
-        assert content.pop_char() == '>'
-        if cls == Declaration:
+            assert content.pop_char() == '>'
+            return el
+
+        content.pop_char()
+        if content.last == '/': # end tag
+            assert content.pop_char() == '>'
             return el
 
         while content:
