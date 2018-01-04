@@ -11,17 +11,21 @@ class CharQueue(list):
         super().__init__(*args, **kwargs)
         self._last = None
 
+    def __repr__(self):
+        return ''.join(self)
+
     @property
     def last(self):
-        ''' the lase poped char. '''
+        ''' the last poped char. '''
         return self._last
 
     def pop_char(self):
-        ''' remove first char from queue, also cache it in `self.last`.'''
-        self._ = self.pop(0)
-        return self._
+        ''' remove and return first char from queue, also cache it in `self.last`.'''
+        self._last = self.pop(0)
+        return self._last
 
     def peek_char(self) -> str:
+        ''' return the first char from queue. '''
         return self[0] if self else None
 
     def pop_until(self, chs: str) -> str:
@@ -61,6 +65,9 @@ class TextNode(Node):
     def __init__(self, value):
         self._value = value
 
+    def __repr__(self):
+        return "TextNode('{}')".format(self._value)
+
     @property
     def value(self):
         return self._value
@@ -71,6 +78,9 @@ class Element(Node):
         self._tag = tag
         self._attrib = []
         self._items = []
+
+    def __repr__(self):
+        return "Element(tag='{}', '{}')".format(self._tag, self._items)
 
     @property
     def tag(self):
@@ -96,9 +106,7 @@ class Element(Node):
             ch = content.pop_char()
             ch = content.peek_char()
             if ch == '/':
-                content.pop_char()
-                assert content.pop_char() == '>'
-                return el
+                break
             if ch not in ' >':
                 el.attrib.append(Attribute.fromstring(content))
 
@@ -107,11 +115,14 @@ class Element(Node):
             assert content.pop_char() == '>'
             return el
 
-        content.pop_char()
-        if content.last == '/': # end tag
+        if content.peek_char() == '/': # end tag
+            assert content.pop_char() == '/'
             assert content.pop_char() == '>'
             return el
+        else:
+            assert content.pop_char() == '>'
 
+        subitems = []
         while content:
             if content.peek_char() == '<':
                 content.pop_char()
@@ -119,15 +130,20 @@ class Element(Node):
                     assert content.pop_char() == '/'
                     end = content.pop_until('>')
                     assert content.pop_char() == '>'
-                    assert end == name
+                    assert end == name, '{} != {}'.format(end, name)
                     break
                 else: # sub
                     sub_el = Element.fromstring(content)
-                    el.items.append(sub_el)
+                    subitems.append(sub_el)
             else:
                 text = TextNode(content.pop_until('<'))
-                el.items.append(text)
+                subitems.append(text)
 
+        if len(subitems) > 1:
+            for tn in (x for x in subitems if isinstance(x, TextNode)):
+                assert tn.value.isspace()
+            subitems = [x for x in subitems if not isinstance(x, TextNode)]
+        el.items.extend(subitems)
         return el
 
 

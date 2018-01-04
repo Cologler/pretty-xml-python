@@ -54,15 +54,6 @@ class XmlPrettifier:
             text += Fore.WHITE + '"' + Fore.RESET
 
         items = obj.items
-        if len(items) > 1:
-            els = [x for x in items if isinstance(x, xml.Element)]
-            if els:
-                texts = [x for x in items if isinstance(x, xml.TextNode)]
-                if texts and all([x.value.isspace() for x in texts]):
-                    items = els
-        elif len(items) == 1:
-            if isinstance(items[0], xml.TextNode) and items[0].value.isspace():
-                items = []
 
         if items:
             text += Fore.LIGHTGREEN_EX + '>' + Fore.RESET

@@ -32,7 +32,6 @@ def main(argv=None):
             print_help()
         else:
             xml_content = trim_header(sys.stdin.read())
-            print(xml_content)
             core.XmlPrettifier(xml_content).print()
     except Exception:
         traceback.print_exc()
