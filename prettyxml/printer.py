@@ -45,6 +45,8 @@ class Printer:
         return self._indent * self._indent_level
 
     def write(self, text):
+        if '\n' in text:
+            text = text.replace('\n', self._get_indent() + '\n')
         if self._newline:
             text = self._get_indent() + text
             self._newline = False
@@ -55,6 +57,9 @@ class Printer:
         print()
         self._newline = True
         return self
+
+    def coloring(self, text, color):
+        return getattr(self, color)(text)
 
     def black(self, text):
         return self.write(colorama.Fore.BLACK + text + colorama.Fore.RESET)
