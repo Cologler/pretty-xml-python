@@ -10,6 +10,12 @@ class FormatError(Exception):
     pass
 
 class CharQueue(list):
+    UNREADABLE_CHARS = {
+        '\r': '\\r',
+        '\t': '\\t',
+        '\n': '\\n',
+    }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._last = None
@@ -45,10 +51,15 @@ class CharQueue(list):
             val += self.pop_char()
         return val
 
+    def cur_info(self):
+        ''' return tuple `(lineno, column)`. '''
+        return (self._lineno, self._column)
+
     def assert_next(self, ch: str) -> None:
         ''' pop next char. if next char is not `ch`, raise ValueError. '''
         if self.pop_char() != ch:
-            msg = 'except `{}`, got `{}`'.format(ch, self._last)
+            readable_last = self.UNREADABLE_CHARS.get(self._last, self._last)
+            msg = 'except `{}`, got `{}`'.format(ch, readable_last)
             msg += ' (line {}, column {})'.format(self._lineno, self._column)
             raise FormatError(msg)
 
@@ -118,7 +129,7 @@ class Element(Node):
             name = name[1:]
         el = cls(name)
 
-        while content.peek_char() == ' ':
+        while content.peek_char() in ' \r\n':
             ch = content.pop_char()
             ch = content.peek_char()
             if ch == '/':
