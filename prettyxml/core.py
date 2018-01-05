@@ -29,37 +29,36 @@ def _walk_doctype(printer: Printer, obj: xml.DocType):
 def _walk_element(printer: Printer, obj: xml.Element):
     wrap_width = 100
 
-    text = Fore.LIGHTGREEN_EX
-    text += '<{}'.format(obj.tag)
-    text += Fore.RESET
+    printer.lightgreen('<{}'.format(obj.tag))
+
     for attr in obj.attrib:
-        text += ' '
-        text += Fore.LIGHTYELLOW_EX + attr.name
-        text += Fore.WHITE + '="'
-        text += Fore.LIGHTWHITE_EX + attr.value
-        text += Fore.WHITE + '"' + Fore.RESET
+        printer.write(' ')
+        printer.lightyellow(attr.name)
+        printer.white('="')
+        printer.lightwhite(attr.value)
+        printer.white('"')
 
     items = obj.items
 
     if items:
-        text += Fore.LIGHTGREEN_EX + '>' + Fore.RESET
+        printer.lightgreen('>')
         if len(items) == 1 and isinstance(items[0], xml.TextNode):
             text_node = items[0]
             if len(text_node.value) < wrap_width:
-                text += text_node.value + Fore.LIGHTGREEN_EX + '</{}>'.format(obj.tag) + Fore.RESET
-                printer.write(text).endline()
+                printer.visit(text_node)
+                printer.lightgreen('</{}>'.format(obj.tag))
+                printer.endline()
                 return
             else:
-                printer.write(text).endline()
+                printer.endline()
                 with printer.indent() as subprinter:
                     subprinter.visit(text_node)
         else:
-            printer.write(text).endline()
+            printer.endline()
             with printer.indent() as subprinter:
                 for item in items:
                     subprinter.visit(item)
     else:
-        printer.write(text)
         printer.lightgreen('/>').endline()
         return
 
