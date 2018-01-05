@@ -66,7 +66,8 @@ def _walk_element(printer: Printer, obj: xml.Element):
 
 @Printer.register(xml.TextNode)
 def _walk_textnode(printer: Printer, obj: xml.TextNode):
-    printer.write(obj.value)
+    if not obj.value.isspace():
+        printer.write(obj.value)
 
 
 class XmlPrettifier:
