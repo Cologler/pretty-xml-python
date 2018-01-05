@@ -6,10 +6,15 @@
 #
 # ----------
 
+class FormatError(Exception):
+    pass
+
 class CharQueue(list):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._last = None
+        self._lineno = 1
+        self._column = 1
 
     def __repr__(self):
         return ''.join(self)
@@ -22,6 +27,11 @@ class CharQueue(list):
     def pop_char(self):
         ''' remove and return first char from queue, also cache it in `self.last`.'''
         self._last = self.pop(0)
+        if self._last == '\n':
+            self._lineno += 1
+            self._column = 1
+        else:
+            self._column += 1
         return self._last
 
     def peek_char(self) -> str:
@@ -35,6 +45,12 @@ class CharQueue(list):
             val += self.pop_char()
         return val
 
+    def assert_next(self, ch: str) -> None:
+        ''' pop next char. if next char is not `ch`, raise ValueError. '''
+        if self.pop_char() != ch:
+            msg = 'except `{}`, got `{}`'.format(ch, self._last)
+            msg += ' (line {}, column {})'.format(self._lineno, self._column)
+            raise FormatError(msg)
 
 class Node:
     pass
@@ -55,10 +71,10 @@ class Attribute:
     @classmethod
     def fromstring(cls, content: CharQueue):
         name = content.pop_until('=')
-        assert content.pop_char() == '='
-        assert content.pop_char() == '"'
+        content.assert_next('=')
+        content.assert_next('"')
         value = content.pop_until('"')
-        assert content.pop_char() == '"'
+        content.assert_next('"')
         return cls(name, value)
 
 class TextNode(Node):
@@ -111,25 +127,25 @@ class Element(Node):
                 el.attrib.append(Attribute.fromstring(content))
 
         if cls == Declaration:
-            assert content.pop_char() == '?'
-            assert content.pop_char() == '>'
+            content.assert_next('?')
+            content.assert_next('>')
             return el
 
         if content.peek_char() == '/': # end tag
-            assert content.pop_char() == '/'
-            assert content.pop_char() == '>'
+            content.assert_next('/')
+            content.assert_next('>')
             return el
         else:
-            assert content.pop_char() == '>'
+            content.assert_next('>')
 
         subitems = []
         while content:
             if content.peek_char() == '<':
                 content.pop_char()
                 if content.peek_char() == '/': # end tag
-                    assert content.pop_char() == '/'
+                    content.assert_next('/')
                     end = content.pop_until('>')
-                    assert content.pop_char() == '>'
+                    content.assert_next('>')
                     assert end == name, '{} != {}'.format(end, name)
                     break
                 else: # sub
