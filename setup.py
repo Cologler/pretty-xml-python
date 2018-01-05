@@ -21,7 +21,7 @@ setup(
     long_description = long_description,
     packages = find_packages(),
     # auto generated:
-    name = 'prettyxml',
+    name = 'pretty-xml',
     version = '0.1.0.1',
     description = '',
     keywords = [],
