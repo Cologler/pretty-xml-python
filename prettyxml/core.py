@@ -13,6 +13,9 @@ import prettyxml.xml as xml
 
 colorama.init()
 
+def lightcyan(text):
+    return colorama.Fore.LIGHTCYAN_EX + text + colorama.Fore.RESET
+
 class XmlPrettifier:
     def __init__(self, xml_text: str):
         self._indent = 0
@@ -27,19 +30,23 @@ class XmlPrettifier:
         print(dt)
 
     def _walk(self):
-        for el in xml.fromstring(self._xml_text):
-            if isinstance(el, xml.Declaration):
-                self._walk_declaration(el)
+        for node in xml.fromstring(self._xml_text):
+            if isinstance(node, xml.Declaration):
+                self._walk_declaration(node)
+            elif isinstance(node, xml.DocType):
+                self._walk_doctype(node)
             else:
-                self._walk_element(el)
+                self._walk_element(node)
 
     def _walk_declaration(self, obj: xml.Declaration):
-        text = Fore.LIGHTCYAN_EX
-        text += '<?{}'.format(obj.tag)
-        for attr in obj.attrib:
-            text += ' {}="{}"'.format(attr.name, attr.value)
-        text += '?>' + Fore.RESET
-        self._println(text)
+        attribs = ' '.join(['{}="{}"'.format(attr.name, attr.value) for attr in obj.attrib])
+        text = '<?{} {}?>'.format('xml', attribs)
+        self._println(lightcyan(text))
+
+    def _walk_doctype(self, obj: xml.DocType):
+        attribs = ' '.join([str(attr) for attr in obj.childs])
+        text = '<!DOCTYPE {}>'.format(attribs)
+        self._println(lightcyan(text))
 
     def _walk_element(self, obj: xml.Element):
         text = self.color_tag_open
