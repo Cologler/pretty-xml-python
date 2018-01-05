@@ -6,8 +6,6 @@
 #
 # ----------
 
-from colorama import Fore
-
 from prettyxml.printer import Printer
 import prettyxml.xml as xml
 
@@ -53,6 +51,7 @@ def _walk_element(printer: Printer, obj: xml.Element):
                 printer.endline()
                 with printer.indent() as subprinter:
                     subprinter.visit(text_node)
+                printer.endline()
         else:
             printer.endline()
             with printer.indent() as subprinter:
@@ -67,7 +66,7 @@ def _walk_element(printer: Printer, obj: xml.Element):
 
 @Printer.register(xml.TextNode)
 def _walk_textnode(printer: Printer, obj: xml.TextNode):
-    printer.write(obj.value).endline()
+    printer.write(obj.value)
 
 
 class XmlPrettifier:
