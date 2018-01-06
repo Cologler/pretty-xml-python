@@ -46,7 +46,7 @@ class Printer:
 
     def write(self, text):
         if '\n' in text:
-            text = text.replace('\n', self._get_indent() + '\n')
+            text = text.replace('\n', '\n' + self._get_indent())
         if self._newline:
             text = self._get_indent() + text
             self._newline = False
