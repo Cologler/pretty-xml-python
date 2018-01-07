@@ -303,14 +303,20 @@ class Element(Node):
         return el
 
 
-def fromstring(val: str):
-    content = CharQueue(val)
-    ret = []
-    while content:
-        content.skip_space()
-        if not content:
-            break
-        content.assert_next('<')
-        ret.append(Node.fromstring(content))
-    assert not content
-    return ret
+class XmlDoc:
+    def __init__(self):
+        self.nodes = []
+
+    @classmethod
+    def fromstring(cls, val: str):
+        el = XmlDoc()
+        content = CharQueue(val)
+        ret = []
+        while content:
+            content.skip_space()
+            if not content:
+                break
+            content.assert_next('<')
+            el.nodes.append(Node.fromstring(content))
+        assert not content
+        return el

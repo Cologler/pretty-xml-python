@@ -70,11 +70,16 @@ def _walk_textnode(printer: Printer, obj: xml.TextNode):
         printer.write(obj.value)
 
 
+@Printer.register(xml.XmlDoc)
+def _walk_xmldoc(printer: Printer, obj: xml.XmlDoc):
+    for node in obj.nodes:
+        printer.visit(node)
+
+
 class XmlPrettifier:
     def __init__(self, xml_text: str):
-        self._printer = Printer()
         self._xml_text = xml_text
 
     def print(self):
-        for node in xml.fromstring(self._xml_text):
-            self._printer.visit(node)
+        xmldoc = xml.XmlDoc.fromstring(self._xml_text)
+        Printer().visit(xmldoc)
