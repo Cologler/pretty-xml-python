@@ -11,23 +11,28 @@ import prettyxml.xml as xml
 
 @Printer.register(xml.Declaration)
 def print_declaration(printer: Printer, obj: xml.Declaration):
+    printer.cyan('<?')
+    printer.lightcyan('xml').write(' ')
     attribs = ' '.join(['{}="{}"'.format(attr.name, attr.value) for attr in obj.attrib])
-    text = '<?{} {}?>'.format('xml', attribs)
-    printer.lightcyan(text).endline()
+    printer.lightcyan(attribs)
+    printer.cyan('?>').endline()
 
 
 @Printer.register(xml.DocType)
 def _walk_doctype(printer: Printer, obj: xml.DocType):
+    printer.cyan('<!')
+    printer.lightcyan('DOCTYPE').write(' ')
     attribs = ' '.join([str(attr) for attr in obj.childs])
-    text = '<!DOCTYPE {}>'.format(attribs)
-    printer.lightcyan(text).endline()
+    printer.lightcyan(attribs)
+    printer.cyan('>').endline()
 
 
 @Printer.register(xml.Element)
 def _walk_element(printer: Printer, obj: xml.Element):
     wrap_width = 100
 
-    printer.lightgreen('<{}'.format(obj.tag))
+    printer.green('<')
+    printer.lightgreen(obj.tag)
 
     for attr in obj.attrib:
         printer.write(' ')
@@ -39,14 +44,12 @@ def _walk_element(printer: Printer, obj: xml.Element):
     items = obj.items
 
     if items:
-        printer.lightgreen('>')
+        printer.green('>')
+
         if len(items) == 1 and isinstance(items[0], xml.TextNode):
             text_node = items[0]
             if len(text_node.value) < wrap_width:
                 printer.visit(text_node)
-                printer.lightgreen('</{}>'.format(obj.tag))
-                printer.endline()
-                return
             else:
                 printer.endline()
                 with printer.indent() as subprinter:
@@ -57,11 +60,12 @@ def _walk_element(printer: Printer, obj: xml.Element):
             with printer.indent() as subprinter:
                 for item in items:
                     subprinter.visit(item)
-    else:
-        printer.lightgreen('/>').endline()
-        return
 
-    printer.lightgreen('</{}>'.format(obj.tag)).endline()
+        printer.green('</')
+        printer.lightgreen(obj.tag)
+        printer.green('>').endline()
+    else:
+        printer.green('/>').endline()
 
 
 @Printer.register(xml.TextNode)
